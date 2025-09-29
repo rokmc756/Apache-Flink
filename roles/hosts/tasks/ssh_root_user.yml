@@ -1,0 +1,103 @@
+---
+- name: Check .ssh Local Directory under Root Home Directory Exists
+  become_user: root
+  stat:
+    path: ~/.ssh
+  register: ssh_directory_exists_check
+
+
+- name: Create .bash_history under Root User Directory if Not Exist
+  become_user: root
+  copy:
+    dest: ~/.bash_history
+    content: ""
+    force: no
+
+
+- name: Add Sudo Line to Bash History under Root User Directory
+  become_user: root
+  lineinfile:
+    dest: /root/.bash_history
+    line: "sudo /bin/bash --login"
+    state: "present"
+
+
+- name: Check .ssh Local Directory of Root User Exists
+  become_user: root
+  stat:
+    path: ~/.ssh
+  register: ssh_root_directory_exists_check
+
+
+- name: Create ~/.ssh Directory in Root Home Directory
+  become_user: root
+  file:
+    path: "~/.ssh"
+    state: directory
+    mode: "0700"
+    owner: "root"
+    group: "root"
+  register: ssh_root_directory_creation
+  when: ssh_root_directory_exists_check is defined and ssh_root_directory_exists_check.stat.exists == false
+
+
+- name: Check if .ssh Key File of Root User Exists
+  become_user: root
+  stat:
+    path: "~/.ssh/{{ item }}"
+  register: ssh_root_key_file_exists_check
+  with_items:
+    - "{{ ssh_key_filename }}"
+    - "{{ ssh_key_filename }}.pub"
+
+
+- name: Adding the Fingerprint for Root User
+  become_user: root
+  shell: "ssh-keyscan -t rsa {{ item }} >> ~/.ssh/known_hosts"
+  register: ssh_root_fingerprint_add
+  with_items:
+    - "{{ groups['all'] }}"
+
+
+- name: Generate SSH Key of Root User on Local Machine
+  become_user: root
+  shell: "/usr/bin/ssh-keygen -t rsa -f ~/.ssh/{{ssh_key_filename}} -P ''"
+  register: ssh_root_key_creation
+  when:
+    - ssh_root_key_file_exists_check is defined and ssh_root_key_file_exists_check.results[0].stat.exists == false and ssh_root_key_file_exists_check.results[1].stat.exists == false
+  failed_when: ssh_root_key_creation.rc != 0
+
+
+- name: Distribute the SSH Key of Root User to the Remote Hosts
+  become_user: root
+  shell: "sshpass -p \"{{ root_user_pass }}\" ssh-copy-id -i ~/.ssh/{{ ssh_key_filename }}.pub \"root@{{ item }}\""
+  register: ssh_copy_root_id_execution
+  with_items:
+    - "{{ groups['all'] }}"
+  failed_when:
+    - ssh_copy_root_id_execution.rc != 0
+
+
+- name: Check SSH to Remote Hosts Works
+  become_user: root
+  shell: "hostname; id"
+  register: ssh_connection_test
+  failed_when: ssh_connection_test.rc != 0
+
+
+- name: Print the Connectivity Test Results
+  become_user: root
+  debug:
+    var: ssh_connection_test.stdout_lines
+
+
+- name: Copy Root User SSH Key from Local to All Hosts
+  become_user: "{{ local_sudo_user }}"
+  shell: |
+    sshpass -p "changeme" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub root@{{ hostvars[item][_netdev]['ipv4']['address'] }}
+  register: ssh_copy_id_keys
+  with_items: "{{ groups['all'] }}"
+  delegate_to: localhost
+  failed_when: ssh_copy_id_keys.rc != 0
+  when: inventory_hostname in hostvars[groups['all'][0]].ansible_hostname
+

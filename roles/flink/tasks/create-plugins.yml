@@ -1,0 +1,48 @@
+---
+- name: Create Hadoop Plugin
+  block:
+    - name: Create Hadoop Plugin Directory
+      file:
+        path: "{{ flink_install_path }}/plugins/s3-hadoop"
+        state: directory
+        owner: "{{ flink_user }}"
+        group: "{{ flink_group }}"
+        recurse: true
+
+    - name: Copy Hadoop Plugin
+      copy:
+        src: "{{ flink_install_path }}/opt/flink-s3-fs-hadoop-{{ flink_version }}.jar"
+        dest: "{{ flink_install_path }}/plugins/s3-hadoop/flink-s3-fs-hadoop-{{ flink_version }}.jar"
+        owner: "{{ flink_user }}"
+        group: "{{ flink_group }}"
+        remote_src: yes
+        mode: '0644'
+  when: flink_plugin_hadoop
+
+
+- name: Create Python Plugin
+  block:
+    - name: Install Python Libs
+      apt:
+        name: "{{ flink_python_libs }}"
+        state: present
+
+    - name: Create Python Plugin Directory
+      file:
+        path: "{{ flink_install_path }}/plugins/python"
+        state: directory
+        owner: "{{ flink_user }}"
+        group: "{{ flink_group }}"
+        recurse: true
+
+    - name: Copy Python Plugin
+      copy:
+        src: "{{ flink_install_path }}/opt/flink-python-{{ flink_version }}.jar"
+        dest: "{{ flink_install_path }}/plugins/python/flink-python-{{ flink_version }}.jar"
+        owner: "{{ flink_user }}"
+        group: "{{ flink_group }}"
+        remote_src: yes
+        mode: '0644'
+
+  when: flink_python_active
+

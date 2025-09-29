@@ -1,0 +1,25 @@
+---
+- name: Check OS ( Java )
+  fail: msg="Not a Red Hat based system!"
+  when: ansible_os_family != 'RedHat' or ansible_os_family != 'CentOS'  ansible_os_family != 'Rocky'
+
+
+- name: Set Facts for Network and Packages Informations
+  import_tasks: set-facts.yml
+  tags: install, uninstall, setup, remove
+
+
+- name: Install Java
+  import_tasks: install-java.yml
+  tags: setup, install
+
+
+- name: Config Java
+  import_tasks: config-java.yml
+  tags: setup, install
+
+
+- name: Uninstall Java
+  import_tasks: uninstall.yml
+  tags: remove, uninstall
+

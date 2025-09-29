@@ -1,0 +1,97 @@
+---
+- name: Create Kafka Group
+  group: name=kafka state=present
+
+
+- name: Create Kafka User
+  user: name=kafka group=kafka
+
+
+- name: Check Kafka Package
+  stat: path={{ _kafka.download_path }}/{{ kafka_package_name }}
+  register: kafka_package_exists
+- debug: msg={{ kafka_package_exists }}
+
+
+- name: Download Kafka Tar File if Not Downloaded
+  get_url: url={{ _kafka.download_url }}/{{ kafka_version }}/{{ kafka_package_name }} dest={{ _kafka.download_path }}
+  when: kafka_package_exists.stat.exists == false and _kafka.download == true
+
+
+- name: Copy Kafka Binary from Local Directory, roles/kafka/files
+  copy: src={{ kafka_package_name }} dest=/tmp/{{ kafka_package_name }} mode=0644 owner=kafka group=kafka
+  when: kafka_package_exists.stat.exists == false and _kafka.download == false
+
+
+- name: Unarchive Kafka Package
+  unarchive: src={{ _kafka.download_path }}/{{ kafka_package_name }} dest={{ _kafka.base_path }} copy=no
+
+
+- name: Delete Package Downloaded if Needed
+  file: path={{ _kafka.download_path }}/{{ kafka_package_name }} state=absent
+  when: force_cleanup is defined and force_cleanup == "True"
+
+
+- name: Check if Any Version of Kafka is Already Linked
+  stat: path={{ _kafka.base_path }}/kafka
+  register: create_kafka_symlink
+- debug: msg={{ create_kafka_symlink }}
+
+
+- name: Repoint Symlink to New Kafka Version
+  become_user: root
+  file:
+    src: "{{ _kafka.base_path }}/{{ kafka_file_name }}"
+    dest: "{{ _kafka.base_path }}/kafka"
+    state: link
+  when: not create_kafka_symlink.stat.exists
+
+
+- name: Set Kafka Data Directory
+  file: path={{ _kafka.config.data_dir }} state=directory owner=kafka group=kafka
+
+
+- name: Set Kafka loggers Directory
+  file: path={{ _kafka.config.log_path }} state=directory owner=kafka group=kafka
+
+
+- name: Set Kafka Log Directory for Topic
+  file: path={{ _kafka.config.log_dirs }}/{{ item }} state=directory owner=kafka group=kafka
+  with_items: "{{ _kafka.config.topic_dirs }}"
+
+
+#- name: Set Kafka Configuration
+#  template: src=templates/kafka-{{ _kafka.major_version }}x.config.j2 dest={{ kafka_application_path }}/config/server.properties force=yes
+
+
+- name: Set Kafka Configuration
+  template: src=templates/{{ item }}-{{ _kafka.major_version }}x.properties.j2 dest={{ kafka_application_path }}/config/{{ item }}.properties force=yes
+  with_items:
+    - server
+    - controller
+
+
+- name: Copy Systemd Configuration of Kafka into /etc/systemd/system
+  template: src=kafka.systemd.j2 dest=/etc/systemd/system/kafka.service owner=root group=root mode=644 force=yes
+
+
+- name: Reload and Start Kafka Systemd Service
+  systemd:
+    daemon-reload: yes
+    name: kafka
+    enabled: yes
+    state: started
+  register: start_kafka_service
+
+
+- name: Insert Executable Binary Path into .bashrc for Kafka
+  lineinfile:
+    path: "{{ item }}"
+    line: "export PATH={{ kafka_application_path }}/bin:{{ kafka_application_path }}/sbin:$PATH"
+  with_items:
+    - "/home/{{ _kafka.user }}/.bashrc"
+    - "/root/.bashrc"
+
+# pi3 install kafka-python
+# https://akpolatcem.medium.com/apache-kafka-how-to-create-a-kafka-consumer-and-producer-using-python-53883933ad3f
+

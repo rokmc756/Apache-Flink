@@ -1,0 +1,3 @@
+{% for key, value in (flink_configuration | dictsort) %}
+{{ key }}: {{ value if value is not boolean else value | lower }}
+{% endfor %}

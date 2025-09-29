@@ -1,0 +1,116 @@
+---
+- name: Create Flink Config Path
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ flink_user }}"
+    group: "{{ flink_group }}"
+    recurse: true
+  with_items:
+    - "{{ flink_conf_path }}"
+    - "{{ flink_data_path }}"
+
+
+- name: Create Extra Path
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ flink_user }}"
+    group: "{{ flink_group }}"
+    recurse: true
+  with_items: "{{ flink_extra_path }}"
+
+
+- name: Create Flink Log Path
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ flink_user }}"
+    group: "{{ flink_group }}"
+    recurse: true
+    mode: 0755
+  with_items:
+    - "{{ flink_log_path }}"
+
+
+- name: Change Config Directory
+  lineinfile:
+    path: "{{ flink_install_path }}/bin/config.sh"
+    regexp: "export FLINK_CONF_DIR"
+    line: "export FLINK_CONF_DIR={{ flink_conf_path }}"
+
+
+- name: Set Config Files
+  set_fact:
+    flink_config_files:
+      - "log4j-console.properties"
+      - "log4j.properties"
+      - "flink-conf.yml"
+      - "masters"
+      - "workers"
+
+
+- name: Find Default Config Files
+  find:
+    paths: "{{ flink_install_path }}/conf"
+    file_type: file
+  register: flink_default_config_files
+
+
+- name: Set Path Default Config Files
+  set_fact:
+    flink_default_config_files: "{{ flink_default_config_files.files | map(attribute='path') | list | regex_replace(flink_install_path + '/conf/') }}"
+
+
+- name: Copy Default Config Files
+  copy:
+    src: "{{ flink_install_path }}/conf/{{ item }}"
+    dest: "{{ flink_conf_path }}"
+    owner: "{{ flink_user }}"
+    group: "{{ flink_group }}"
+    remote_src: true
+    mode: 0644
+  with_items: "{{ flink_default_config_files | difference(flink_config_files) }}"
+  when: flink_install_path + "/conf" != flink_conf_path
+
+
+- name: Create Flink Config Files
+  template:
+    src: "{{ item.template }}"
+    dest: "{{ flink_conf_path }}/{{ item.file }}"
+    owner: "{{ flink_user }}"
+    group: "{{ flink_group }}"
+    mode: 0644
+  with_items:
+    - { template: "{{ flink_conf_yaml_template_path }}", file: config.yaml }
+    - { template: "{{ flink_masters_template_path }}", file: masters }
+    - { template: "{{ flink_workers_template_path }}", file: workers }
+  notify: Restart Flink
+
+
+- name: Create Log4J File
+  template:
+    src: "{{ flink_log4j_template_path }}"
+    dest: "{{ flink_conf_path }}/log4j.properties"
+    mode: 0644
+  when: flink_log4j_template_path is defined
+  notify: Restart Flink
+
+
+- name: Create Log4J-Console File
+  template:
+    src: "{{ flink_log4j_console_template_path }}"
+    dest: "{{ flink_conf_path }}/log4j-console.properties"
+    mode: 0644
+  when: flink_log4j_console_template_path is defined
+  notify: Restart Flink
+
+
+- name: Create Log4J-Cli file
+  template:
+    src: "{{ flink_log4j_cli_template_path }}"
+    dest: "{{ flink_conf_path }}/log4j-cli.properties"
+    mode: 0644
+  when: flink_log4j_cli_template_path is defined
+  notify: Restart Flink
+

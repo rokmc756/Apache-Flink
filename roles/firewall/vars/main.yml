@@ -1,0 +1,13 @@
+ports:
+  kafka:
+    - 9092
+    - 2888  # Quoram
+    - 3888  # Quara
+  zookeeper:
+    - 2181
+  kafka_ui:
+    - 9997   # Jmax
+    - 9998   # Jmax
+    - 8080   # Web
+  webview:
+    - 8080

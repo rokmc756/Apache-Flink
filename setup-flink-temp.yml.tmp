@@ -1,0 +1,7 @@
+---
+- hosts: kafka_brokers
+  become: true
+  vars:
+    print_debug: true
+  roles:
+    - temp

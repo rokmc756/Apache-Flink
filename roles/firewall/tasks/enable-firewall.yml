@@ -1,0 +1,31 @@
+---
+- name: Enable and Start Firewalld
+  systemd:
+    name: firewalld
+    enabled: true
+    state: started
+
+
+- name: Set Firewalld Port Policy for Kafka
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: yes
+  with_items:
+    - "{{ ports.kafka }}"
+    - "{{ ports.zookeeper }}"
+  notify: Restart Firewall
+  when: inventory_hostname in groups['kafka_brokers']
+
+
+- name: Set Firewalld Port Policy for Kafka UI
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: yes
+  with_items:
+    - "{{ ports.kafka_ui }}"
+  notify: Restart Firewall
+  when: inventory_hostname in groups['monitor']

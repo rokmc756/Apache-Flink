@@ -1,0 +1,7 @@
+oracle_java_version: "{{ jdk.oracle.major_version}},{{ jdk.oracle.minor_version}},{{ jdk.oracle.patch_version}}"
+oss_java_version: "{{ jdk.oss.major_version}},{{ jdk.oss.minor_version}},{{ jdk.oss.patch_version}}"
+
+rh7_java_pkgs: "java-1.8.0-openjdk,java-1.8.0-openjdk-devel,java-11-openjdk,java-11-openjdk-devel"
+rh8_java_pkgs: "java-17-openjdk,java-17-openjdk-devel"
+rh9_java_pkgs: "java-17-openjdk,java-17-openjdk-devel"
+

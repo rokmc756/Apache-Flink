@@ -1,0 +1,32 @@
+---
+- name: Get Network Interface Name from Prefix of IP Addresses
+  set_fact:
+    netdev0: "{{ ansible_interfaces | map('regex_replace', '^', 'ansible_') | map('extract', vars) | selectattr('ipv4', 'defined') | selectattr('ipv4.address', 'match', _flink.net.ipaddr0 ) | map(attribute='device') | first }}"
+    netdev2: "{{ ansible_interfaces | map('regex_replace', '^', 'ansible_') | map('extract', vars) | selectattr('ipv4', 'defined') | selectattr('ipv4.address', 'match', _flink.net.ipaddr2 ) | map(attribute='device') | first }}"
+
+
+- name: Get IP Address from Network Device Name
+  set_fact:
+    ipaddr0: "{{ hostvars[inventory_hostname]['ansible_'~netdev0].ipv4.address }}"
+    ipaddr2: "{{ hostvars[inventory_hostname]['ansible_'~netdev2].ipv4.address }}"
+
+
+- name: Define Fact for flink/Zookeeper Version
+  set_fact:
+    scala_version: "{{ _flink.scala.major_version}}.{{ _flink.scala.minor_version }}"
+    flink_version: "{{ _flink.major_version }}.{{ _flink.minor_version }}.{{ _flink.patch_version }}"
+
+
+- name: Set flink/Zookeeper Package Name and Application Path
+  set_fact:
+    flink_file_name: "flink_{{ scala_version }}-{{ flink_version }}"
+    flink_package_name: "flink_{{ scala_version }}-{{ flink_version }}.tgz"
+    flink_application_path: "{{ _flink.base_path }}/flink_{{ scala_version }}-{{ flink_version }}"
+
+
+- name: Set Default Network Device and Address
+  set_fact:
+    _netdev: "{{ netdev2 }}"
+    _ipaddr: "{{ ipaddr2 }}"
+
+

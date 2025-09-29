@@ -1,0 +1,10 @@
+---
+- name: Create Flink Jobs Path
+  file:
+    path: "{{ flink_jobs_path }}"
+    state: directory
+    owner: "{{ flink_user }}"
+    group: "{{ flink_group }}"
+    recurse: true
+    mode: 01777
+

@@ -1,0 +1,27 @@
+[all:vars]
+ssh_key_filename="id_rsa"
+remote_machine_username="jomoon"
+remote_machine_password="changeme"
+
+
+[monitor]
+rk9-node01 ansible_ssh_host=192.168.2.191
+
+
+[standby]
+rk9-node02 ansible_ssh_host=192.168.2.192
+
+
+# These are your kafka cluster nodes
+[kafka_brokers]
+rk9-node03 kafka_broker_id=1 ansible_ssh_host=192.168.2.193
+rk9-node04 kafka_broker_id=2 ansible_ssh_host=192.168.2.194
+rk9-node05 kafka_broker_id=3 ansible_ssh_host=192.168.2.195
+
+
+# These are your zookeeper cluster nodes
+[zk_servers]
+rk9-node03 zk_id=1 ansible_ssh_host=192.168.2.193
+rk9-node04 zk_id=2 ansible_ssh_host=192.168.2.194
+rk9-node05 zk_id=3 ansible_ssh_host=192.168.2.195
+

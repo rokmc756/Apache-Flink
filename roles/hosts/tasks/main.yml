@@ -1,0 +1,35 @@
+---
+- name: Check OS ( MinIO )
+  fail: msg="{{ ansible_distribution }} is not supported for this ansible playbook!"
+  when: ansible_facts['distribution'] not in ['RedHat', 'CentOS', 'Rocky', 'Debian', 'Ubuntu']
+
+
+- name: Set Facts for Network and Packages Informations
+  import_tasks: set-facts.yml
+  tags: install, uninstall, init, uninit
+
+
+- name: Setup Hostname and IP Address in /etc/hosts
+  import_tasks: init-hosts.yml
+  tags: init, install
+
+
+- name: Install Prerequiestes Software Packages and Setup Hostname, IP Addresses as well as
+  import_tasks: install.yml
+  tags: init, install
+
+
+- name: Create SSH Key and Exchange it for sudo user among All Hosts
+  import_tasks: ssh_sudo_user.yml
+  tags: init, install
+
+
+- name: Create SSH Key and Exchange it for root user among All Hosts
+  import_tasks: ssh_root_user.yml
+  tags: init, install
+
+
+- name: Uninstall SSH Keys and sudo users as well as Prerequiestes Software Packages
+  import_tasks: uninstall.yml
+  tags: uninit, uninstall
+

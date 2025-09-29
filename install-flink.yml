@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - firewall
+    - java
+
+- hosts: kafka_brokers
+  become: true
+  roles:
+    - zookeeper
+    - kafka
+
+- hosts: monitor
+  become: true
+  roles:
+    - kafka-ui
+

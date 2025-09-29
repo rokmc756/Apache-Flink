@@ -1,0 +1,53 @@
+---
+- name: Correct Java Version Selected
+  alternatives:
+    link: /usr/bin/java
+    name: java
+    path: /usr/lib/jvm/jre-17-openjdk/bin/java
+    priority: -10
+  when:
+    - hostvars[inventory_hostname].ansible_distribution_major_version|int >= 8
+    - _jdk.oss.install == true
+
+
+- name: Correct Java Version Selected
+  alternatives:
+    link: /usr/bin/java
+    name: java
+    path: /usr/lib/jvm/jre-1.8.0-openjdk/bin/java
+    priority: -10
+  when:
+    - hostvars[inventory_hostname].ansible_distribution_major_version|int < 8
+    - _jdk.oss.install == true
+
+
+- name: Correct Java Version Selected
+  alternatives:
+    link: /usr/bin/java
+    name: java
+    path: /usr/java/jdk-{{ oracle_java_version }}/bin/java
+    priority: -10
+  when:
+    - hostvars[inventory_hostname].ansible_distribution_major_version|int <= 8
+    - _jdk.oracle.install == true
+
+
+- name: Copy Java Home Script
+  template: src=java_home.sh dest=/etc/profile.d
+
+
+- name: Set Java Home Script
+  shell: source /etc/profile.d/java_home.sh
+
+
+- name: Get Java Version
+  shell: java -version
+  register: javaVersion
+
+
+- name: Set Java Version Fact
+  set_fact:
+    java_version: "{{ javaVersion.stdout }}"
+- name: debug
+  debug: var=java_version
+

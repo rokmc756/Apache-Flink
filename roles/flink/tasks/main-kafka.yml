@@ -1,0 +1,26 @@
+---
+- name: Check OS ( Kafka )
+  fail: msg="Not a Red Hat based system!"
+  when: ansible_os_family != 'RedHat' or ansible_os_family != 'CentOS'  ansible_os_family != 'Rocky'
+
+
+- name: Set Facts for Network and Packages Informations
+  import_tasks: set-facts.yml
+  tags: setup, remove, install, uninstall
+
+
+- name: Install Internal Zookeeper
+  import_tasks: install-internal-zookeeper.yml
+  tags: setup, install
+  when: ( _zookeeper.use_internal_zookeeper )
+
+
+- name: Install Kafka
+  import_tasks: install-kafka.yml
+  tags: setup, install
+
+
+- name: Uninstall Kafka
+  import_tasks: uninstall.yml
+  tags: remove, uninstall
+

@@ -1,0 +1,36 @@
+---
+- name: Disable Firewalld Port Policy for Kafka UI
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: disabled
+    immediate: yes
+  ignore_errors: true
+  with_items:
+    - "{{ ports.kafka_ui }}"
+  notify: Restart Firewall
+  when: inventory_hostname in groups['monitor']
+
+
+- name: Disable Firewalld Port Policy for Kafka
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: disabled
+    immediate: yes
+  ignore_errors: true
+  with_items:
+    - "{{ ports.kafka }}"
+    - "{{ ports.zookeeper }}"
+  notify: Restart Firewall
+  when: inventory_hostname in groups['kafka_brokers']
+
+
+- name: Disable and Stop Firewalld
+  systemd:
+    name: firewalld
+    enabled: no
+    state: stopped
+    daemon_reload: yes
+  ignore_errors: true
+

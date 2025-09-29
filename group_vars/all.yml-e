@@ -1,0 +1,7 @@
+ansible_ssh_pass: "changeme"
+ansible_become_pass: "rmsidwoalfh"
+sudo_user: "jomoon"
+sudo_group: "jomoon"
+sudo_user_pass: "changeme"
+sudo_user_home_dir: "/home/{{ sudo_user }}"
+domain_name: "jtest.pivotal.io"

@@ -1,0 +1,87 @@
+---
+- name: Reload and Stop Systemd Service of Kafka
+  systemd:
+    name: "kafka"
+    enabled: no
+    state: stopped
+  ignore_errors: true
+
+
+- name: Reload and Stop Systemd Service of Internal Zookeeper
+  systemd:
+    name: "zookeeper"
+    enabled: no
+    state: stopped
+  ignore_errors: true
+  when: ( _zookeeper.use_internal_zookeeper )
+
+
+- name: Delete config/log/data Files for Kafka
+  file:
+    path: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  with_items:
+    - "{{ kafka_application_path }}/config/server.properties"
+    - "{{ _kafka.config.log_dirs }}"
+    - "{{ _kafka.config.log_path }}"
+    - "{{ _kafka.config.data_dir }}"
+    - "{{ _kafka.base_path }}/kafka_{{ scala_version }}-{{ kafka_version }}"
+    - "{{ _kafka.base_path }}/kafka"
+    - "{{ _kafka.download_path }}/{{ kafka_package_name }}"
+    - "/etc/systemd/system/kafka.service"
+
+
+- name: Delete config/log/data Files for Internal Zookeeper
+  file:
+    path: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  with_items:
+    - "{{ _zookeeper.base_path }}/kafka/config/zookeeper.properties"
+    - "{{ _zookeeper.config.data_dir }}/myid"
+    - "{{ _zookeeper.config.data_dir }}"
+    - "{{ _zookeeper.config.log_path }}"
+    - "{{ _zookeeper.config.data_dir }}"
+    - "/etc/systemd/system/zookeeper.service"
+  when: ( _zookeeper.use_internal_zookeeper )
+
+
+- name: Reload Systemd Daemon
+  systemd:
+    daemon_reload: yes
+  ignore_errors: true
+
+
+- name: Delete Zookeeper Group
+  group: name=zookeeper state=absent
+  ignore_errors: true
+  when: ( _zookeeper.use_internal_zookeeper )
+
+
+- name: Delete Zookeeper User
+  user: name=zookeeper state=absent
+  ignore_errors: true
+  when: ( _zookeeper.use_internal_zookeeper )
+
+
+- name: Delete Kafka Group
+  group: name=kafka state=present
+  ignore_errors: true
+
+
+- name: Delete Kafka User
+  user: name=kafka state=present
+  ignore_errors: true
+
+
+- name: Remove a Line Including PATH Variable for Kafka
+  lineinfile:
+    path: "{{ item }}"
+    regexp: "^export PATH=(.*)kafka(.*)PATH$"
+    state: absent
+  register: remove_kafka_path
+  with_items:
+    - "/home/{{ _kafka.user }}/.bashrc"
+    - "/root/.bashrc"
+

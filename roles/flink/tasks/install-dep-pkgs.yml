@@ -1,0 +1,7 @@
+---
+# Required Packages, Libs, Etc
+- name: Install Some Packages
+  package:
+    name: "{{ flink_required_pkgs }}"
+    state: present
+

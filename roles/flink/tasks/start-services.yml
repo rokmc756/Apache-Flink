@@ -1,0 +1,65 @@
+---
+- name: Jemalloc
+  block:
+    - name: Install Some Packages
+      apt:
+        name: "{{ flink_jemalloc_libs }}"
+        state: present
+  when: flink_jemalloc_active
+
+
+- name: JobManager Service
+  block:
+    - name: Copy Daemon Script For JobManager
+      template:
+        src: "{{ flink_jobmanger_service_template_path }}"
+        dest: "/lib/systemd/system/flink-jobmanager.service"
+        mode: 0644
+      notify: Restart Flink
+
+    - name: Configure JobManager Service
+      systemd:
+        name: "flink-jobmanager"
+        state: "{{ flink_service_state }}"
+        enabled: "{{ flink_service_enabled }}"
+        daemon_reload: true
+
+  when: "'jobmanager' in flink_manager_type"
+
+
+- name: TaskManager Service
+  block:
+    - name: Copy Daemon Script for TaskManager
+      template:
+        src: "{{ flink_taskmanager_service_template_path }}"
+        dest: "/lib/systemd/system/flink-taskmanager.service"
+        mode: 0644
+      notify: Restart Flink
+
+    - name: Configure TaskManager Service
+      systemd:
+        name: "flink-taskmanager"
+        state: "{{ flink_service_state }}"
+        enabled: "{{ flink_service_enabled }}"
+        daemon_reload: true
+  when: "'taskmanager' in flink_manager_type"
+
+
+- name: History Service
+  block:
+    - name: Copy Daemon Script For History
+      template:
+        src: "{{ flink_history_service_template_path }}"
+        dest: "/lib/systemd/system/flink-history.service"
+        mode: 0644
+      notify: Restart Flink
+
+    - name: Configure History Service
+      systemd:
+        name: "flink-history"
+        state: "{{ flink_service_state }}"
+        enabled: "{{ flink_service_enabled }}"
+        daemon_reload: true
+
+  when: "'history' in flink_manager_type"
+

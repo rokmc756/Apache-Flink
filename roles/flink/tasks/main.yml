@@ -1,0 +1,53 @@
+---
+- name: Check Required Variable, flink_manager_type
+  fail:
+    msg: "flink_manager_type is required. Values possible [jobmanager, taskmanager, history]"
+  when: flink_manager_type is undefined and flink_manager_type != 'jobmanager' and flink_manager_type != 'taskmanager' and flink_manager_type != 'history'
+
+
+- name: Check OS ( Apache Flink )
+  fail: msg="Not a Red Hat based system!"
+  when: ansible_os_family != 'RedHat' or ansible_os_family != 'CentOS'  ansible_os_family != 'Rocky'
+
+
+- name: Set Facts for Network and Packages Informations
+  import_tasks: set-facts.yml
+  tags: setup, remove, install, uninstall, create, delete, start, stop, config
+
+
+- name: Install Dependant Packages
+  include: install-dep-pkgs.yml
+  tags: setup, install
+  when: ( deps is defined and deps == true ) or ( flink_all is defined and flink_all == true )
+
+
+- name: Install Flink Binary
+  include: install-flink.yml
+  tags: setup, install
+  when: ( pkgs is defined and pkgs == true ) or ( flink_all is defined and flink_all == true )
+
+
+- name: Configure Flink
+  include: config-flink.yml
+  tags: config, install
+  when: ( bin is defined and bin == true ) or ( flink_all is defined and flink_all == true )
+
+
+- name: Create Flink Plugins
+  include: create-plugins.yml
+  tags: create, install
+  when: ( plugin is defined and plugin == true ) or ( flink_all is defined and flink_all == true )
+
+
+- name: Start Flink Services
+  include: start-services.yml
+  tags: start, install
+  when: ( service is defined and service == true ) or ( flink_all is defined and flink_all == true )
+
+
+- name: Create Flink Jobs Path
+  include: create-jobs-path.yml
+  tags: create, install
+  when: ( jobs is defined and jobs == true ) or ( flink_all is defined and flink_all == true )
+
+

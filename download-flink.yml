@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Download Apache Flink Software Binaries and Save the into Ansible Files Directory
+      become: true
+      vars:
+        flink_download_version: "{{ _flink.major_version }}.{{ _flink.minor_version }}.{{ _flink.patch_version }}"
+        scala_version: "{{ _flink.scala.major_version }}.{{ _flink.scala.minor_version }}"
+        flink_package: "flink-{{ _flink.major_version }}.{{ _flink.minor_version }}.{{ _flink.patch_version }}-bin-scala_{{ _flink.scala.major_version }}.{{ _flink.scala.minor_version }}.tgz"
+        local_dir: "/home/jomoon/Flink"
+      get_url:
+        url: "{{ item.url }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { url: "{{ _flink.download_url }}/flink-{{ flink_download_version }}/{{ flink_package }}",
+            dest: "{{ local_dir }}/roles/flink/files/{{ flink_package }}" }
+      tags: download
+
