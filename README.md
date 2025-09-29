@@ -72,7 +72,7 @@ A Flink cluster needs exactly as many task slots as the highest parallelism used
 It is easier to get better resource utilization. Without slot sharing, the non-intensive source/map() subtasks would block as many resources as the resource intensive window subtasks. With slot sharing, increasing the base parallelism in our example from two to six yields full utilization of the slotted resources, while making sure that the heavy subtasks are fairly distributed among the TaskManagers.
 
 <p align="center">
-<img src="https://github.com/rokmc756/Apache-Flink/blob/main/roles/flink/images/tasks_sharing.svg" width="80%" height="80%">
+<img src="https://github.com/rokmc756/Apache-Flink/blob/main/roles/flink/images/slot_sharing.svg" width="80%" height="80%">
 </p>
 
 
