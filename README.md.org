@@ -1,21 +1,3 @@
-## What is Apache Flink?
-Flink is a distributed system and requires effective allocation and management of compute resources in order to execute streaming applications.
-It integrates with all common cluster resource managers such as Hadoop YARN and Kubernetes, but can also be set up to run as a standalone cluster or even as a library.
-
-This section contains an overview of Flink’s architecture and describes how its main components interact to execute applications and recover from failures.
-
-### The Architecture of Apache Flink
-<p align="center">
-<img src="https://github.com/rokmc756/Apache-Flink/blob/main/roles/flink/images/apache-flink-architecture.svg" width="80%" height="80%">
-</p>
-
-
-## What is the purpose of  this Ansible Playbook?
-It is Ansible Playbook to deploy Apache Flink conveniently on Baremetal, Virtual Machines and Cloud Infrastructure.
-The main purpose of this project is actually very simple. Because i have many jobs to install different kind of Apache Flink versions and reproduce issues & test features  as a support
-engineer. I just want to spend less time for it.
-
-
 # Flink Ansible role
 ![Logo](logo.gif)
 
