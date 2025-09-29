@@ -100,125 +100,59 @@ The main purpose of this project is actually very simple. Because i have many jo
 engineer. I just want to spend less time for it.
 
 
-# Flink Ansible role
-![Logo](logo.gif)
-
-[![Build Status](https://app.travis-ci.com/idealista/flink_role.svg)](https://app.travis-ci.com/github/idealista/flink_role)
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-idealista.flink_role-B62682.svg)](https://galaxy.ansible.com/idealista/flink_role)
-
-
-
-This ansible role installs Flink in a Debian environment. It has been tested for the following Debian versions:
-
-* Bullseye
-
-This role has been generated using the [cookiecutter](https://github.com/cookiecutter/cookiecutter) tool, you can generate a similar role that fits your needs using the this [cookiecutter template](https://github.com/idealista/cookiecutter-ansible-role).
-
-- [Getting Started](#getting-started)
-	- [Prerequisities](#prerequisities)
-	- [Installing](#installing)
-- [Usage](#usage)
-- [Testing](#testing)
-- [Built With](#built-with)
-- [Versioning](#versioning)
-- [Authors](#authors)
-- [License](#license)
-- [Contributing](#contributing)
-
-## Getting Started
-These instructions will get you a copy of the role for your Ansible playbook. Once launched, it will install Flink in a Debian system.
-
-### Prerequisities
-
-Ansible 4.4.0 version installed.
-
-Molecule 3.x.x version installed.
-
-For testing purposes, [Molecule](https://molecule.readthedocs.io/) with [Docker](https://www.docker.com/) as driver and [Goss](https://github.com/aelsabbahy/goss) as verifier.
-
-### Installing
-
-Create or add to your roles dependency file (e.g requirements.yml):
-
-```
-- src: idealista.flink_role
-  version: 1.0.0
-  name: flink_role
+### Configure Varialbes such as Download Location, Versions, Install/Config Path, Informations
+```yaml
+$ vi group_vars/all.yml
+~~ snip
+_flink:
+  cluster_name: "Jack Apache Flink"
+  user: "flink"
+  group: "flink"
+  password: "changeme"
+  users:
+    - { name: "jomoon", password: "changeme", su: "true", login: "true" }
+    - { name: "romoon", password: "changeme", su: "false", login: "false" }
+    - { name: "komoon", password: "changeme", su: "true", login: "false" }
+    - { name: "somoon", password: "changeme", su: "false", login: "true" }
+  user_home: "/home/flink"
+  base_path: "/usr/local"
+  major_version: 4
+  minor_version: 1
+  patch_version: 8
+  bin_type: tar.gz
+  force_clean: false
+  download: false
+  firewall: false
+  download_url: "https://archive.apache.org/dist/cassandra"
+  download_path: /tmp
+  dir:
+    base: /flink_data
+    commit: /flink_data/flink/commitlog
+    data: /flink_data/flink/data
+    logs: /flink_data/flink/logs
+  net:
+    type: "virtual"                # Or Physical
+    gateway: "192.168.0.1"
+    ipaddr0: "192.168.0.19"
+    ipaddr1: "192.168.1.19"
+    ipaddr2: "192.168.2.19"
+~~ snip
 ```
 
-Install the role with ansible-galaxy command:
-
-```
-ansible-galaxy install -p roles -r requirements.yml -f
+### How to Install/Deploy Apache Flink
+```yaml
 ```
 
-Use in a playbook:
-
-```
----
-- hosts: someserver
-  roles:
-    - role: flink_role
+### How to Uninstall/Destroy Apache Flink
+```yaml
 ```
 
-## Usage
+### Supported Java Version
+-
+-
 
-Look to the [defaults](defaults/main.yml) properties file to see the possible configuration properties, it is very likely that you will not need to override any variables.
+## Planning
+-
 
-
-## Testing
-
-### Install dependencies
-
-```sh
-$ pipenv sync
-```
-
-For more information read the [pipenv docs](ipenv-fork.readthedocs.io/en/latest/).
-
-### Testing
-
-```sh
-$ pipenv run molecule test 
-```
-
-## Built With
-
-![Ansible](https://img.shields.io/badge/ansible-4.4.0-green.svg)
-![Molecule](https://img.shields.io/badge/molecule-3.4.0-green.svg)
-![Goss](https://img.shields.io/badge/goss-0.3.16-green.svg)
-
-## Versioning
-
-For the versions available, see the [tags on this repository](https://github.com/idealista/flink_role/tags).
-
-Additionaly you can see what change in each version in the [CHANGELOG.md](CHANGELOG.md) file.
-
-## Authors
-
-* **Idealista** - *Work with* - [idealista](https://github.com/idealista)
-
-See also the list of [contributors](https://github.com/idealista/flink_role/contributors) who participated in this project.
-
-## License
-
-![Apache 2.0 License](https://img.shields.io/hexpm/l/plug.svg)
-
-This project is licensed under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-
-## REferences
-
-https://nightlies.apache.org/flink/flink-docs-release-1.11/ops/deployment/cluster_setup.html
-https://medium.com/@mulan101/apache-flink%EB%9E%80-6f5e34ff7ac6
-https://digitalbourgeois.tistory.com/184#google_vignette
-
-
-## Ansible Playbook
-- https://github.com/nikosgavalas/ansible-flink/tree/master
-- https://github.com/idealista/flink_role
-
+## References
+-
