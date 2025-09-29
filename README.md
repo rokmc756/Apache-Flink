@@ -76,6 +76,21 @@ It is easier to get better resource utilization. Without slot sharing, the non-i
 </p>
 
 
+### Flink Application Execution
+A Flink Application is any user program that spawns one or multiple Flink jobs from its main() method.
+The execution of these jobs can happen in a local JVM (LocalEnvironment) or on a remote setup of clusters with multiple machines (RemoteEnvironment).
+For each program, the ExecutionEnvironment provides methods to control the job execution (e.g. setting the parallelism) and to interact with the outside world (see Anatomy of a Flink Program).
+The jobs of a Flink Application can either be submitted to a long-running Flink Session Cluster, a dedicated Flink Job Cluster (deprecated), or a Flink Application Cluster.
+The difference between these options is mainly related to the cluster’s lifecycle and to resource isolation guarantees.
+
+## Flink Application Cluster
+- **Cluster Lifecycle**: a Flink Application Cluster is a dedicated Flink cluster that only executes jobs from one Flink Application and where the main() method runs on the cluster rather than the client. The job submission is a one-step process: you don’t need to start a Flink cluster first and then submit a job to the existing cluster session; instead, you package your application logic and dependencies into a executable job JAR and the cluster entrypoint (ApplicationClusterEntryPoint) is responsible for calling the main() method to extract the JobGraph. This allows you to deploy a Flink Application like any other application on Kubernetes, for example. The lifetime of a Flink Application Cluster is therefore bound to the lifetime of the Flink Application.
+- **Resource Isolation**: in a Flink Application Cluster, the ResourceManager and Dispatcher are scoped to a single Flink Application, which provides a better separation of concerns than the Flink Session Cluster.
+
+## Flink Session Cluster
+- **Cluster Lifecycle**: in a Flink Session Cluster, the client connects to a pre-existing, long-running cluster that can accept multiple job submissions. Even after all jobs are finished, the cluster (and the JobManager) will keep running until the session is manually stopped. The lifetime of a Flink Session Cluster is therefore not bound to the lifetime of any Flink Job.
+- **Resource Isolation**: TaskManager slots are allocated by the ResourceManager on job submission and released once the job is finished. Because all jobs are sharing the same cluster, there is some competition for cluster resources — like network bandwidth in the submit-job phase. One limitation of this shared setup is that if one TaskManager crashes, then all jobs that have tasks running on this TaskManager will fail; in a similar way, if some fatal error occurs on the JobManager, it will affect all jobs running in the cluster.
+- **Other considerations**: having a pre-existing cluster saves a considerable amount of time applying for resources and starting TaskManagers. This is important in scenarios where the execution time of jobs is very short and a high startup time would negatively impact the end-to-end user experience — as is the case with interactive analysis of short queries, where it is desirable that jobs can quickly perform computations using existing resources.
 
 
 ## What is the purpose of  this Ansible Playbook?
